@@ -1,7 +1,7 @@
-let currentValue = "";
+let currentInput = "0";
 let previousValue = null;
-let operator = null;
-
+let currentOperator = null;
+let shouldResetInput = false;
 
 const operationDisplay = document.querySelector("#operation");
 const totalDisplay = document.querySelector("#total");
@@ -19,6 +19,12 @@ function handleClick(){
     else if(value === "DEL"){
         handleDelete();
     }
+    else if (value === "="){
+        handleEquals();
+    }
+    else if (["+", "−", "×", "÷"].includes(value)){
+        handleOperator(value);
+    }
     else if (!isNaN(value) || value === ".") {
         handleNumber(value);
     }
@@ -27,7 +33,9 @@ function handleClick(){
 function handleClear(){
     currentInput = "0";
     previousValue = null;
-    operator = null;
+    currentOperator = null;
+    shouldResetInput = false;
+
 
     updateDisplay();
 }
@@ -41,6 +49,74 @@ function handleDelete() {
     
 
     updateDisplay();
+}
+
+function handleNumber(value) {
+
+    // Prevent multiple dots
+    if (value === "." && currentInput.includes(".")) return;
+
+    // Start fresh after operator or equals
+    if (currentInput === "0" || shouldResetInput) {
+        currentInput = value === "." ? "0." : value;
+        shouldResetInput = false;
+    } else {
+        currentInput += value;
+    }
+
+    updateDisplay();
+}
+
+
+function handleOperator(operator) {
+
+    // If already have operator, calculate first
+    if (currentOperator !== null && !shouldResetInput) {
+        calculate();
+    }
+
+    previousValue = currentInput;
+    currentOperator = operator;
+    shouldResetInput = true;
+
+    updateDisplay();
+}
+
+function handleEquals() {
+    if (currentOperator === null) return;
+
+    calculate();
+    currentOperator = null;
+    shouldResetInput = true;
+
+    updateDisplay();
+}
+
+function calculate() {
+    let result;
+
+    const prev = parseFloat(previousValue);
+    const current = parseFloat(currentInput);
+
+    switch (currentOperator) {
+        case "+":
+            result = prev + current;
+            break;
+        case "−":
+            result = prev - current;
+            break;
+        case "×":
+            result = prev * current;
+            break;
+        case "÷":
+            result = current === 0 ? 0 : prev / current;
+            break;
+        default:
+            return;
+    }
+
+    currentInput = result.toString();
+    previousValue = result.toString();
 }
 
 
